@@ -135,7 +135,7 @@ Bu proje Docker ve Docker Compose kullanılarak kolayca kurulabilir.
 ### Adım 1: Kurulum
 Projeyi sunucunuza klonlayın ve dizine gidin:
 ```bash
-git clone https://github.com/yourusername/passad.git
+git clone https://github.com/burak-aras/passAD.git
 cd passad
 ```
 
