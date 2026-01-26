@@ -233,7 +233,7 @@ def send_manual_email():
     log_service = LogService()
     
     # Configuration
-    passcore_url = os.getenv('PASSCORE_URL', 'http://localhost')
+    passad_url = os.getenv('PASSAD_URL', 'http://localhost')
     token_validity_hours = int(os.getenv('TOKEN_VALIDITY_HOURS', '24'))
     test_recipient = os.getenv('TEST_RECIPIENT', '')
     
@@ -267,7 +267,7 @@ def send_manual_email():
         # === NORMAL FLOW (password not expired yet) ===
         # Generate token and send warning email
         token = token_service.generate_token(username, token_validity_hours)
-        reset_link = f"{passcore_url}/reset/{token}"
+        reset_link = f"{passad_url}/reset/{token}"
         
         # Format expiry date
         expire_date = datetime.utcnow() + timedelta(days=days_left if days_left else 0)

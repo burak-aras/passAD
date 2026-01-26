@@ -1,10 +1,10 @@
-# 🔐 PassCore: Active Directory Self-Service Password Reset
+# 🔐 PassAD: Active Directory Self-Service Password Reset
 
 ![PassCore Status](https://img.shields.io/badge/Status-Active-success)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
 ![Python](https://img.shields.io/badge/Python-3.10-yellow)
 
-PassCore, Active Directory kullanıcılarının kendi şifrelerini güvenli bir şekilde sıfırlamalarını sağlayan, Docker tabanlı modern bir web uygulamasıdır. Sistem ayrıca, şifre süresi dolmak üzere olan kullanıcılara otomatik e-posta bildirimleri göndererek proaktif şifre yönetimini destekler.
+PassAD, Active Directory kullanıcılarının kendi şifrelerini güvenli bir şekilde sıfırlamalarını sağlayan, Docker tabanlı modern bir web uygulamasıdır. Sistem ayrıca, şifre süresi dolmak üzere olan kullanıcılara otomatik e-posta bildirimleri göndererek proaktif şifre yönetimini destekler.
 
 ---
 
@@ -135,8 +135,8 @@ Bu proje Docker ve Docker Compose kullanılarak kolayca kurulabilir.
 ### Adım 1: Kurulum
 Projeyi sunucunuza klonlayın ve dizine gidin:
 ```bash
-git clone https://github.com/yourusername/passcore.git
-cd passcore
+git clone https://github.com/yourusername/passad.git
+cd passad
 ```
 
 ### Adım 2: Konfigürasyon (.env)
@@ -155,12 +155,12 @@ Aşağıdaki tabloda `.env` dosyasındaki tüm ayarların ne işe yaradığı de
 | **Active Directory** | `AD_SERVER` | AD sunucusunun IP adresi veya hostname'i. | `10.147.101.50` |
 | | `AD_DOMAIN` | Domain adı (Domain Controller'daki domain). | `example.local` |
 | | `AD_BASE_DN` | LDAP sorguları için Base DN (Distinguished Name). | `DC=example,DC=local` |
-| | `AD_USER` | AD üzerinde okuma/yazma yetkisi olan servis hesabı (Domain\User formatında). | `EXAMPLE\svc_passcore` |
+| | `AD_USER` | AD üzerinde okuma/yazma yetkisi olan servis hesabı (Domain\User formatında). | `EXAMPLE\svc_passad` |
 | | `AD_PASSWORD` | Servis hesabının şifresi. | `GizliSifre123!` |
 | **SMTP (E-posta)** | `SMTP_SERVER` | E-posta gönderimi için kullanılacak SMTP sunucusu. | `172.20.34.51` |
 | | `SMTP_PORT` | SMTP portu (Genellikle 25 veya 587). | `25` |
 | | `SENDER_EMAIL` | Gönderen olarak görünecek e-posta adresi. | `noreply@example.com` |
-| **Uygulama** | `PASSCORE_URL` | Uygulamanın yayınlandığı URL (E-posta linklerinde kullanılır). | `http://passcore.example.com` |
+| **Uygulama** | `PASSAD_URL` | Uygulamanın yayınlandığı URL (E-posta linklerinde kullanılır). | `http://passad.example.com` |
 | | `SECRET_KEY` | Flask oturum güvenliği için rastgele, uzun bir anahtar. | `rastgele-uzun-bir-guvenlik-anahtari` |
 | | `ADMIN_PASSWORD` | `/admin` paneline erişim için kullanılacak şifre. | `admin123` |
 | **Zamanlayıcı (Job)** | `WARNING_START` | Şifre süresinin dolmasına kaç gün kala uyarı gönderilmeye başlansın? | `14` (Son 14 gün kala başlar) |
@@ -214,5 +214,5 @@ Eğer "invalid credentials" hatası alıyorsanız:
 
 ---
 
-**PassCore** - [Your Company](https://example.com)
+**PassAD** - [Your Company](https://example.com)
 Versiyon 1.2

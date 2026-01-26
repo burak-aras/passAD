@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  # PassCore Web Application
-  passcore-web:
+  # PassAD Web Application
+  passad-web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: passcore-web
+    container_name: passad-web
     ports:
       - "80:80"
     environment:
@@ -37,7 +37,7 @@ services:
       # Job Settings (for "Job Çalıştır" button)
       - WARNING_START=${WARNING_START}
       - WARNING_END=${WARNING_END}
-      - PASSCORE_URL=${PASSCORE_URL}
+      - PASSAD_URL=${PASSAD_URL}
       - TOKEN_VALIDITY_HOURS=${TOKEN_VALIDITY_HOURS}
 
       # SMTP Settings
@@ -50,7 +50,7 @@ services:
     volumes:
       - token-storage:/app/data
     networks:
-      - passcore-network
+      - passad-network
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost/health" ]
@@ -90,8 +90,8 @@ services:
       - WARNING_START=${WARNING_START}
       - WARNING_END=${WARNING_END}
 
-      # PassCore URL (used in email links)
-      - PASSCORE_URL=${PASSCORE_URL}
+      # PassAD URL (used in email links)
+      - PASSAD_URL=${PASSAD_URL}
 
       # Token Settings
       - TOKEN_DB_PATH=/app/data/tokens.db
@@ -102,7 +102,7 @@ services:
     volumes:
       - token-storage:/app/data
     networks:
-      - passcore-network
+      - passad-network
     # Job runs continuously with cron
     restart: unless-stopped
     logging:
@@ -118,5 +118,5 @@ volumes:
 
 # Network for inter-container communication
 networks:
-  passcore-network:
+  passad-network:
     driver: bridge

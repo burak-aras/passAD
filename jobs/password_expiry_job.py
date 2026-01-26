@@ -41,7 +41,7 @@ def run_password_expiry_check():
     # Configuration
     warning_start = int(os.getenv('WARNING_START', '0'))
     warning_end = int(os.getenv('WARNING_END', '7'))
-    passcore_url = os.getenv('PASSCORE_URL', 'http://localhost')
+    passad_url = os.getenv('PASSAD_URL', 'http://localhost')
     token_validity_hours = int(os.getenv('TOKEN_VALIDITY_HOURS', '24'))
     
     # Initialize services
@@ -87,7 +87,7 @@ def run_password_expiry_check():
         if email:
             # Generate token
             token = token_service.generate_token(username, token_validity_hours)
-            reset_link = f"{passcore_url}/reset/{token}"
+            reset_link = f"{passad_url}/reset/{token}"
             
             # Determine where email goes
             sent_to = test_recipient if test_recipient else email

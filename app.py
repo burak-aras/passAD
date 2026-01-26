@@ -1,5 +1,5 @@
 """
-PassCore - Active Directory Password Reset Web Application
+PassAD - Active Directory Password Reset Web Application
 Token-based password reset system with admin panel
 """
 
@@ -112,6 +112,6 @@ if __name__ == '__main__':
     port = int(os.getenv('APP_PORT', 80))
     debug = os.getenv('DEBUG', 'False').lower() == 'true'
     
-    logger.info(f"Starting PassCore on {host}:{port}")
+    logger.info(f"Starting PassAD on {host}:{port}")
     logger.info(f"Admin panel available at /admin")
     app.run(host=host, port=port, debug=debug)
