@@ -140,19 +140,35 @@ cd passcore
 ```
 
 ### Adım 2: Konfigürasyon (.env)
-Örnek `.env.example` dosyasını kopyalayın ve kendi ayarlarınızı yapın.
-**Not:** Bu dosya hassas bilgiler içerir, asla versiyon kontrolüne eklemeyin.
+Örnek `.env.example` dosyasını `.env` olarak kopyalayın ve içeriğini kendi ortamınıza göre düzenleyin. 
+**Not:** Bu dosya hassas bilgiler (şifreler vb.) içerir, bu nedenle `.gitignore` dosyasına eklenmiştir ve versiyon kontrolüne (git) **eklenmemelidir**.
 
-`docker-compose.yml` içindeki ortam değişkenlerini de düzenleyebilirsiniz:
+```bash
+cp .env.example .env
+nano .env
+```
 
-| Değişken | Açıklama | Örnek |
-|----------|----------|-------|
-| `AD_SERVER` | AD Sunucu IP/Host | `192.168.1.50` |
-| `AD_DOMAIN` | Domain Adı | `example.local` |
-| `AD_USER` | Servis Hesabı Kullanıcısı | `EXAMPLE\svc_passcore` |
-| `AD_PASSWORD` | Servis Hesabı Şifresi | `GizliSifre` |
-| `SMTP_SERVER` | Mail Sunucusu | `192.168.1.25` |
-| `TEST_RECIPIENT` | Test Modu (tüm mailler bu adrese gider) | `admin@example.com` |
+Aşağıdaki tabloda `.env` dosyasındaki tüm ayarların ne işe yaradığı detaylıca açıklanmıştır:
+
+| Kategori | Değişken | Açıklama | Örnek |
+|----------|----------|----------|-------|
+| **Active Directory** | `AD_SERVER` | AD sunucusunun IP adresi veya hostname'i. | `10.147.101.50` |
+| | `AD_DOMAIN` | Domain adı (Domain Controller'daki domain). | `example.local` |
+| | `AD_BASE_DN` | LDAP sorguları için Base DN (Distinguished Name). | `DC=example,DC=local` |
+| | `AD_USER` | AD üzerinde okuma/yazma yetkisi olan servis hesabı (Domain\User formatında). | `EXAMPLE\svc_passcore` |
+| | `AD_PASSWORD` | Servis hesabının şifresi. | `GizliSifre123!` |
+| **SMTP (E-posta)** | `SMTP_SERVER` | E-posta gönderimi için kullanılacak SMTP sunucusu. | `172.20.34.51` |
+| | `SMTP_PORT` | SMTP portu (Genellikle 25 veya 587). | `25` |
+| | `SENDER_EMAIL` | Gönderen olarak görünecek e-posta adresi. | `noreply@example.com` |
+| **Uygulama** | `PASSCORE_URL` | Uygulamanın yayınlandığı URL (E-posta linklerinde kullanılır). | `http://passcore.example.com` |
+| | `SECRET_KEY` | Flask oturum güvenliği için rastgele, uzun bir anahtar. | `rastgele-uzun-bir-guvenlik-anahtari` |
+| | `ADMIN_PASSWORD` | `/admin` paneline erişim için kullanılacak şifre. | `admin123` |
+| **Zamanlayıcı (Job)** | `WARNING_START` | Şifre süresinin dolmasına kaç gün kala uyarı gönderilmeye başlansın? | `14` (Son 14 gün kala başlar) |
+| | `WARNING_END` | Şifre süresinin dolmasına kaç gün kala uyarı gönderimi dursun? | `0` (Süre dolana kadar gönderir) |
+| | `TOKEN_VALIDITY_HOURS` | Şifre sıfırlama linkinin geçerlilik süresi (saat). | `24` |
+| **Test Modu** | `TEST_RECIPIENT` | **Sadece Test İçin:** Eğer tanımlıysa, sistem TÜM e-postaları gerçek kullanıcılar yerine bu adrese gönderir. Prodüksiyonda boş bırakın. | `admin@example.com` |
+
+> **İpucu:** Eğer Docker kullanıyorsanız ve ortam değişkenlerini `docker-compose.yml` içinden yönetmek isterseniz, `.env` dosyasındaki değerleri oraya da taşıyabilirsiniz, ancak `.env` dosyası kullanımı daha temiz ve güvenli bir yöntemdir.
 
 ### Adım 3: Çalıştırma
 Container'ları ayağa kaldırın:
