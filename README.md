@@ -157,7 +157,7 @@ Aşağıdaki tabloda `.env` dosyasındaki tüm ayarların ne işe yaradığı de
 | | `AD_BASE_DN` | LDAP sorguları için Base DN (Distinguished Name). | `DC=example,DC=local` |
 | | `AD_USER` | AD üzerinde okuma/yazma yetkisi olan servis hesabı (Domain\User formatında). | `EXAMPLE\svc_passad` |
 | | `AD_PASSWORD` | Servis hesabının şifresi. | `GizliSifre123!` |
-| **SMTP (E-posta)** | `SMTP_SERVER` | E-posta gönderimi için kullanılacak SMTP sunucusu. | `172.20.34.51` |
+| **SMTP (E-posta)** | `SMTP_SERVER` | E-posta gönderimi için kullanılacak SMTP sunucusu. | `192.168.1.51` |
 | | `SMTP_PORT` | SMTP portu (Genellikle 25 veya 587). | `25` |
 | | `SENDER_EMAIL` | Gönderen olarak görünecek e-posta adresi. | `noreply@example.com` |
 | **Uygulama** | `PASSAD_URL` | Uygulamanın yayınlandığı URL (E-posta linklerinde kullanılır). | `http://passad.example.com` |
