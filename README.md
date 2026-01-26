@@ -152,7 +152,7 @@ Aşağıdaki tabloda `.env` dosyasındaki tüm ayarların ne işe yaradığı de
 
 | Kategori | Değişken | Açıklama | Örnek |
 |----------|----------|----------|-------|
-| **Active Directory** | `AD_SERVER` | AD sunucusunun IP adresi veya hostname'i. | `10.147.101.50` |
+| **Active Directory** | `AD_SERVER` | AD sunucusunun IP adresi veya hostname'i. | `192.168.1.50` |
 | | `AD_DOMAIN` | Domain adı (Domain Controller'daki domain). | `example.local` |
 | | `AD_BASE_DN` | LDAP sorguları için Base DN (Distinguished Name). | `DC=example,DC=local` |
 | | `AD_USER` | AD üzerinde okuma/yazma yetkisi olan servis hesabı (Domain\User formatında). | `EXAMPLE\svc_passad` |
