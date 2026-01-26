@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin{% endblock %} - PassCore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --dark-bg: #1a1a2e;
+            --sidebar-bg: #16213e;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: var(--dark-bg);
+            padding-top: 20px;
+            z-index: 1000;
+        }
+
+        .sidebar .brand {
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar .brand h4 {
+            margin: 0;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark-bg);
+        }
+
+        .stat-card .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .badge-sent {
+            background-color: #28a745;
+        }
+
+        .badge-failed {
+            background-color: #dc3545;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+        }
+
+        .badge-active {
+            background-color: #17a2b8;
+        }
+
+        .badge-expired {
+            background-color: #6c757d;
+        }
+
+        .badge-used {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .btn-action {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-action:hover {
+            background: #5a6fd6;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <h4>🔐 PassCore</h4>
+            <small class="text-muted">Admin Panel</small>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}"
+                href="{{ url_for('admin.dashboard') }}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a class="nav-link {% if request.endpoint == 'admin.email_logs' %}active{% endif %}"
+                href="{{ url_for('admin.email_logs') }}">
+                <i class="bi bi-envelope"></i> Email Logları
+            </a>
+            <a class="nav-link {% if request.endpoint == 'admin.password_logs' %}active{% endif %}"
+                href="{{ url_for('admin.password_logs') }}">
+                <i class="bi bi-key"></i> Şifre Değişiklikleri
+            </a>
+            <a class="nav-link {% if request.endpoint == 'admin.token_logs' %}active{% endif %}"
+                href="{{ url_for('admin.token_logs') }}">
+                <i class="bi bi-link-45deg"></i> Tokenlar
+            </a>
+            <a class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}"
+                href="{{ url_for('admin.users') }}">
+                <i class="bi bi-people"></i> AD Kullanıcıları
+            </a>
+            <hr class="text-white-50 mx-3">
+            <a class="nav-link text-danger" href="{{ url_for('admin.logout') }}">
+                <i class="bi bi-box-arrow-left"></i> Çıkış
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

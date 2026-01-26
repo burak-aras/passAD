@@ -1,0 +1,120 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📊 Dashboard</h2>
+    <div>
+        <form action="{{ url_for('admin.run_job') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-action"
+                onclick="return confirm('Job\'ı çalıştırmak istediğinize emin misiniz?')">
+                <i class="bi bi-play-fill"></i> Job Çalıştır
+            </button>
+        </form>
+        <form action="{{ url_for('admin.cleanup') }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="bi bi-trash"></i> Temizle
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.today.emails }}</div>
+            <div class="stat-label">📧 Bugün Gönderilen Email</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-left-color: #28a745;">
+            <div class="stat-value">{{ stats.today.passwords }}</div>
+            <div class="stat-label">🔑 Bugün Değişen Şifre</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-left-color: #17a2b8;">
+            <div class="stat-value">{{ stats.active_tokens }}</div>
+            <div class="stat-label">🔗 Aktif Token</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-left-color: #ffc107;">
+            <div class="stat-value">{{ stats.email.sent }}</div>
+            <div class="stat-label">📨 Son 7 Gün Email</div>
+        </div>
+    </div>
+</div>
+
+<!-- Weekly Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="table-container">
+            <h5 class="mb-3">📧 Email İstatistikleri (Son 7 Gün)</h5>
+            <table class="table table-sm">
+                <tr>
+                    <td>Toplam</td>
+                    <td class="text-end"><strong>{{ stats.email.total }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Başarılı</td>
+                    <td class="text-end text-success"><strong>{{ stats.email.sent }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Başarısız</td>
+                    <td class="text-end text-danger"><strong>{{ stats.email.failed }}</strong></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="table-container">
+            <h5 class="mb-3">🔑 Şifre Değişikliği (Son 7 Gün)</h5>
+            <table class="table table-sm">
+                <tr>
+                    <td>Toplam Deneme</td>
+                    <td class="text-end"><strong>{{ stats.password.total }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Başarılı</td>
+                    <td class="text-end text-success"><strong>{{ stats.password.success }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Başarısız</td>
+                    <td class="text-end text-danger"><strong>{{ stats.password.failed }}</strong></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="table-container">
+    <h5 class="mb-3">📋 Son Aktiviteler</h5>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Aksiyon</th>
+                <th>Detay</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activity in recent_activity %}
+            <tr>
+                <td>{{ activity.created_at }}</td>
+                <td><code>{{ activity.action }}</code></td>
+                <td>{{ activity.details or '-' }}</td>
+                <td>{{ activity.ip_address or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center text-muted">Henüz aktivite yok</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

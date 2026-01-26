@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% block title %}Tokenlar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🔗 Token Durumları</h2>
+    <div>
+        <span class="badge badge-active me-2">Aktif</span>
+        <span class="badge badge-used me-2">Kullanıldı</span>
+        <span class="badge badge-expired">Süresi Doldu</span>
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Oluşturma</th>
+                <th>Kullanıcı</th>
+                <th>Token</th>
+                <th>Bitiş</th>
+                <th>Kullanıldı</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for token in tokens %}
+            <tr>
+                <td>{{ token.created_at }}</td>
+                <td><strong>{{ token.username }}</strong></td>
+                <td><code>{{ token.token[:20] }}...</code></td>
+                <td>{{ token.expires_at }}</td>
+                <td>{{ token.used_at or '-' }}</td>
+                <td>
+                    {% if token.status == 'active' %}
+                    <span class="badge badge-active">Aktif</span>
+                    {% elif token.status == 'used' %}
+                    <span class="badge badge-used">Kullanıldı</span>
+                    {% else %}
+                    <span class="badge badge-expired">Süresi Doldu</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    Henüz token yok
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

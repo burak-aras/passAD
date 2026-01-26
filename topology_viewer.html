@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PassCore Topoloji Diyagramları</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .diagram-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .diagram-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+        }
+
+        .diagram-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-size: 1.8em;
+        }
+
+        .diagram-section p {
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .mermaid {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            min-width: 100%;
+        }
+
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Sequence diagram genisligini artir */
+        #flow4 .mermaid svg {
+            min-width: 1200px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 4px solid #667eea;
+            padding: 10px 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: inline-block;
+            width: auto;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .diagram-section {
+                padding: 20px;
+            }
+
+            .tab-button {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🏗️ PassCore Sistem Topolojisi</h1>
+            <p class="subtitle">Active Directory Şifre Sıfırlama Sistemi - Mimari Diyagramlar</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('architecture')">🏛️ Sistem Mimarisi</button>
+            <button class="tab-button" onclick="showTab('flow1')">🔄 Şifre Sıfırlama Akışı</button>
+            <button class="tab-button" onclick="showTab('flow2')">📧 Manuel Email Gönderimi</button>
+            <button class="tab-button" onclick="showTab('flow3')">⏰ Manuel Job Akışı</button>
+            <button class="tab-button" onclick="showTab('flow4')">🤖 Otomatik Job (Cron)</button>
+            <button class="tab-button" onclick="showTab('docker')">🐳 Docker Yapılandırması</button>
+        </div>
+
+        <!-- Sistem Mimarisi -->
+        <div id="architecture" class="tab-content active">
+            <div class="diagram-section">
+                <h2>🏛️ Sistem Mimarisi</h2>
+                <div class="info-box">
+                    <strong>Açıklama:</strong> Bu diyagram, PassCore sisteminin tüm bileşenlerini, servislerini ve
+                    harici sistemlerle olan bağlantılarını göstermektedir.
+                </div>
+                <div class="mermaid">
+                    %%{init: {'theme':'base', 'themeVariables': { 'fontSize':'16px'}}}%%
+                    graph TB
+                    %% Kullanıcı Katmanı
+                    User["👤 Son Kullanıcı<br /><br />Web Tarayıcı"]
+                    Admin["👨‍💼 Sistem Yöneticisi<br /><br />Admin Erişimi"]
+
+                    %% Web Container
+                    WebApp["🌐 Flask Web Uygulaması<br /><br />app.py<br />Port: 80"]
+                    AdminPanel["⚙️ Admin Panel<br /><br />admin.py<br />Route: /admin"]
+
+                    %% Servisler
+                    TokenSvc["🔑 Token Service<br /><br />token_service.py<br />Token Yönetimi"]
+                    ADSvc["📁 AD Service<br /><br />ad_service.py<br />LDAP İşlemleri"]
+                    EmailSvc["📧 Email Service<br /><br />email_service.py<br />SMTP İşlemleri"]
+                    LogSvc["📊 Log Service<br /><br />log_service.py<br />Loglama"]
+
+                    %% Veritabanları
+                    TokenDB[("🗄️ Token DB<br /><br />tokens.db<br />SQLite")]
+                    LogDB[("📝 Log DB<br /><br />logs.db<br />SQLite")]
+
+                    %% Job Container
+                    ExpiryJob["⏰ Password Expiry Job<br /><br />password_expiry_job.py<br />Otomatik Çalıştırma"]
+
+                    %% Harici Sistemler
+                    AD["🏢 Active Directory<br /><br />192.168.1.100<br />example.local<br />LDAP Port: 389"]
+                    SMTP["📮 SMTP Server<br /><br />192.168.1.25<br />Port: 25<br />noreply@example.com"]
+
+                    %% Paylaşılan Depolama
+                    Volume["💾 Docker Volume<br /><br />token-storage<br />Paylaşılan Veritabanları"]
+
+                    %% Kullanıcı Bağlantıları
+                    User -->|"HTTP:80<br />Şifre Sıfırlama"| WebApp
+                    Admin -->|"HTTP:80/admin<br />Yönetim Paneli"| AdminPanel
+
+                    %% Web App Bağlantıları
+                    WebApp -->|"Token Doğrulama"| TokenSvc
+                    WebApp -->|"Şifre Değiştir"| ADSvc
+                    WebApp -->|"İşlem Logla"| LogSvc
+
+                    %% Admin Panel Bağlantıları
+                    AdminPanel -->|"Kullanıcı Sorgula"| ADSvc
+                    AdminPanel -->|"Email Gönder"| EmailSvc
+                    AdminPanel -->|"Token Oluştur"| TokenSvc
+                    AdminPanel -->|"Log Görüntüle"| LogSvc
+
+                    %% Servis - Veritabanı Bağlantıları
+                    TokenSvc -->|"CRUD İşlemleri"| TokenDB
+                    LogSvc -->|"Log Kaydet"| LogDB
+
+                    %% Harici Sistem Bağlantıları
+                    ADSvc -->|"LDAP Bind<br />Password Change"| AD
+                    EmailSvc -->|"SMTP Send<br />Port: 25"| SMTP
+
+                    %% Job Bağlantıları
+                    ExpiryJob -->|"Token Oluştur"| TokenSvc
+                    ExpiryJob -->|"Kullanıcı Sorgula"| ADSvc
+                    ExpiryJob -->|"Toplu Email"| EmailSvc
+
+                    %% Volume Bağlantıları
+                    TokenDB -.->|"Mount: /app/data"| Volume
+                    LogDB -.->|"Mount: /app/data"| Volume
+
+                    %% Email Akışı
+                    SMTP -.->|"Şifre Sıfırlama<br />Email + Token Link"| User
+
+                    %% Stil Tanımlamaları
+                    classDef webStyle fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+                    classDef adminStyle fill:#2196F3,stroke:#1565C0,stroke-width:3px,color:#fff
+                    classDef serviceStyle fill:#00BCD4,stroke:#0097A7,stroke-width:2px,color:#fff
+                    classDef dbStyle fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
+                    classDef jobStyle fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+                    classDef externalStyle fill:#F44336,stroke:#C62828,stroke-width:3px,color:#fff
+                    classDef volumeStyle fill:#607D8B,stroke:#37474F,stroke-width:2px,color:#fff
+                    classDef userStyle fill:#FFC107,stroke:#F57C00,stroke-width:2px,color:#000
+
+                    class WebApp webStyle
+                    class AdminPanel adminStyle
+                    class TokenSvc,ADSvc,EmailSvc,LogSvc serviceStyle
+                    class TokenDB,LogDB dbStyle
+                    class ExpiryJob jobStyle
+                    class AD,SMTP externalStyle
+                    class Volume volumeStyle
+                    class User,Admin userStyle
+                </div>
+            </div>
+        </div>
+
+        <!-- Şifre Sıfırlama Akışı -->
+        <div id="flow1" class="tab-content">
+            <div class="diagram-section">
+                <h2>🔄 Şifre Sıfırlama Akışı (Token Tabanlı)</h2>
+                <div class="info-box">
+                    <strong>Açıklama:</strong> Kullanıcının email ile aldığı token linkini kullanarak şifresini nasıl
+                    sıfırladığını gösteren adım adım akış diyagramı.
+                </div>
+                <div class="mermaid">
+                    sequenceDiagram
+                    participant User as 👤 Kullanıcı
+                    participant Email as 📧 Email
+                    participant Web as 🌐 Web App
+                    participant Token as 🔑 Token Service
+                    participant AD as 🏢 Active Directory
+                    participant Log as 📊 Log Service
+
+                    User->>Email: Email'den token linkine tıklar
+                    Email->>Web: GET /reset/token
+                    Web->>Token: Token'ı doğrula
+                    Token-->>Web: Geçerli + Username
+                    Web-->>User: Şifre sıfırlama formu göster
+
+                    User->>Web: POST /reset/token (eski/yeni şifre)
+                    Web->>AD: Mevcut şifreyi doğrula
+                    AD-->>Web: Doğrulama sonucu
+                    Web->>AD: Yeni şifreyi ayarla
+                    AD-->>Web: Başarılı
+                    Web->>Token: Token'ı kullanılmış işaretle
+                    Web->>Log: Başarılı değişikliği logla
+                    Web-->>User: Başarı mesajı göster
+                </div>
+            </div>
+        </div>
+
+        <!-- Manuel Email Gönderimi -->
+        <div id="flow2" class="tab-content">
+            <div class="diagram-section">
+                <h2>📧 Admin Panel - Manuel Email Gönderimi</h2>
+                <div class="info-box">
+                    <strong>Açıklama:</strong> Sistem yöneticisinin admin panel üzerinden belirli bir kullanıcıya manuel
+                    olarak şifre sıfırlama emaili göndermesi süreci.
+                </div>
+                <div class="mermaid">
+                    sequenceDiagram
+                    participant Admin as 👨‍💼 Admin
+                    participant Panel as ⚙️ Admin Panel
+                    participant AD as 🏢 Active Directory
+                    participant Token as 🔑 Token Service
+                    participant Email as 📧 Email Service
+                    participant SMTP as 📮 SMTP Server
+                    participant User as 👤 Kullanıcı
+
+                    Admin->>Panel: Kullanıcı seç + "Email Gönder"
+                    Panel->>AD: Kullanıcı bilgilerini getir
+                    AD-->>Panel: Email adresi + bilgiler
+                    Panel->>Token: Yeni token oluştur
+                    Token-->>Panel: Token + Link
+                    Panel->>Email: Email hazırla (token linki ile)
+                    Email->>SMTP: Email gönder
+                    SMTP-->>User: Şifre sıfırlama emaili
+                    Panel-->>Admin: Başarı mesajı
+                </div>
+            </div>
+        </div>
+
+        <!-- Otomatik Job Akışı -->
+        <div id="flow3" class="tab-content">
+            <div class="diagram-section">
+                <h2>⏰ Otomatik Şifre Sona Erme Kontrolü</h2>
+                <div class="info-box">
+                    <strong>Açıklama:</strong> Admin panelden "Job Çalıştır" butonuna basıldığında, şifresi yakında sona
+                    erecek tüm kullanıcılara otomatik email gönderme süreci.
+                </div>
+                <div class="mermaid">
+                    sequenceDiagram
+                    participant Admin as 👨‍💼 Admin
+                    participant Panel as ⚙️ Admin Panel
+                    participant Job as ⏰ Expiry Job
+                    participant AD as 🏢 Active Directory
+                    participant Token as 🔑 Token Service
+                    participant Email as 📧 Email Service
+                    participant Users as 👥 Kullanıcılar
+
+                    Admin->>Panel: "Job Çalıştır" butonuna tıkla
+                    Panel->>Job: docker-compose run password-expiry-job
+                    Job->>AD: Tüm kullanıcıları sorgula
+                    AD-->>Job: Kullanıcı listesi + şifre sona erme tarihleri
+
+                    loop Her kullanıcı için
+                    Job->>Job: Şifre sona erme kontrolü (0-60 gün)
+                    alt Şifre yakında sona erecek
+                    Job->>Token: Token oluştur
+                    Token-->>Job: Token + Link
+                    Job->>Email: Uyarı emaili hazırla
+                    Email->>Users: Email gönder
+                    end
+                    end
+
+                    Job-->>Panel: İşlem tamamlandı (log)
+                    Panel-->>Admin: Sonuç raporu göster
+                </div>
+            </div>
+        </div>
+
+        <!-- Docker Yapılandırması -->
+        <div id="docker" class="tab-content">
+            <div class="diagram-section">
+                <h2>🐳 Docker Yapılandırması</h2>
+                <div class="info-box">
+                    <strong>Açıklama:</strong> Docker container'ları, network yapısı ve volume paylaşımını gösteren
+                    diyagram.
+                </div>
+                <div class="mermaid">
+                    graph LR
+                    subgraph "Docker Host"
+                    subgraph "passcore-network (bridge)"
+                    Web[passcore-web<br />Port: 80<br />restart: unless-stopped]
+                    Job[password-expiry-job<br />restart: no<br />Manuel çalıştırma]
+                    end
+
+                    Volume[token-storage<br />Volume<br />Paylaşılan Veritabanları]
+
+                    Web -.->|Mount /app/data| Volume
+                    Job -.->|Mount /app/data| Volume
+                    end
+
+                    Internet[🌐 Internet<br />Port 80] -->|HTTP| Web
+
+                    style Web fill:#4CAF50,stroke:#2E7D32,color:#fff
+                    style Job fill:#FF9800,stroke:#E65100,color:#fff
+                    style Volume fill:#607D8B,stroke:#37474F,color:#fff
+                    style Internet fill:#2196F3,stroke:#1565C0,color:#fff
+                </div>
+            </div>
+        </div>
+
+        <!-- Otomatik Job Akışı (Cron/Scheduled) -->
+        <div id="flow4" class="tab-content">
+            <div class="diagram-section">
+                <h2>🤖 Otomatik Şifre Sona Erme Kontrolü (Zamanlanmış Görev)</h2>
+                <div class="info-box">
+                    <strong>Açıklama:</strong> Sistem otomatik olarak (cron job veya Windows Task Scheduler ile) belirli
+                    aralıklarla çalışır ve şifresi yakında sona erecek kullanıcılara otomatik email gönderir. Admin
+                    müdahalesi gerekmez.
+                </div>
+                <div class="mermaid">
+                    sequenceDiagram
+                    participant Scheduler as ⏰ Zamanlanmis Gorev
+                    participant Container as 🐳 Docker Container
+                    participant Job as 🤖 Expiry Job
+                    participant AD as 🏢 Active Directory
+                    participant Token as 🔑 Token Service
+                    participant Email as 📧 Email Service
+                    participant Users as 👥 Kullanicilar
+
+                    Note over Scheduler: Zamanlanmis gorev: Her Pazartesi 12:00
+                    Scheduler->>Container: docker-compose run password-expiry-job
+                    Container->>Job: Container baslat
+                    Job->>AD: Tum kullanicilari sorgula (LDAP)
+                    AD-->>Job: Kullanici listesi + sifre sona erme tarihleri
+
+                    Note over Job: Filtreleme: 0-60 gun arasi
+
+                    loop Her kullanici icin
+                    alt Sifre yakinda sona erecek
+                    Job->>Token: Token olustur
+                    Token-->>Job: Token + Link
+                    Job->>Email: Uyari emaili hazirla
+                    Email->>Users: Email gonder
+                    end
+                    end
+
+                    Job-->>Container: Islem tamamlandi (log)
+                    Container-->>Scheduler: Container kapandi (exit 0)
+
+                    Note over Scheduler: Bir sonraki hafta tekrar calisacak
+                </div>
+
+                <div class="info-box" style="margin-top: 20px; border-left-color: #00BCD4;">
+                    <strong>📋 Akış Detayları:</strong><br /><br />
+                    <strong>1. Zamanlanmış Tetikleme:</strong> Cron job veya Windows Task Scheduler her gün belirli
+                    saatte (örn: 08:00) job'ı otomatik başlatır<br />
+                    <strong>2. Kullanıcı Sorgulama:</strong> Active Directory'den tüm kullanıcılar ve şifre sona erme
+                    tarihleri sorgulanır (LDAP)<br />
+                    <strong>3. Filtreleme:</strong> Şifresi 0-60 gün içinde sona erecek kullanıcılar filtrelenir<br />
+                    <strong>4. Email Gönderimi:</strong> Her kullanıcı için benzersiz token oluşturulur ve şifre
+                    sıfırlama emaili gönderilir<br />
+                    <strong>5. Loglama:</strong> Tüm işlemler veritabanına kaydedilir<br />
+                    <strong>6. Tamamlanma:</strong> Container kapanır ve bir sonraki gün tekrar çalışmak üzere bekler
+                </div>
+
+                <div class="info-box" style="margin-top: 20px; border-left-color: #FF9800;">
+                    <strong>💡 Zamanlanmış Görev Kurulumu:</strong><br /><br />
+                    <strong>Linux/Unix (Cron):</strong><br />
+                    <code>0 8 * * * cd /path/to/app && docker-compose run --rm password-expiry-job</code><br /><br />
+                    <strong>Windows (Task Scheduler):</strong><br />
+                    Program: <code>docker-compose</code><br />
+                    Arguments: <code>run --rm password-expiry-job</code><br />
+                    Working Directory: <code>C:\Users\User\Desktop\yedek\app</code><br />
+                    Schedule: Günlük, 08:00
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>PassCore</strong> - Active Directory Password Reset System</p>
+            <p>Versiyon 1.0 | Son Güncelleme: 2026-01-21</p>
+        </footer>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                width: 200,
+                actorMargin: 80,
+                messageMargin: 50,
+                boxMargin: 10,
+                noteMargin: 25,
+                useMaxWidth: false
+            }
+        });
+
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

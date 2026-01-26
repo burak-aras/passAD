@@ -1,0 +1,202 @@
+# 🔐 PassCore: Active Directory Self-Service Password Reset
+
+![PassCore Status](https://img.shields.io/badge/Status-Active-success)
+![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
+![Python](https://img.shields.io/badge/Python-3.10-yellow)
+
+PassCore, Active Directory kullanıcılarının kendi şifrelerini güvenli bir şekilde sıfırlamalarını sağlayan, Docker tabanlı modern bir web uygulamasıdır. Sistem ayrıca, şifre süresi dolmak üzere olan kullanıcılara otomatik e-posta bildirimleri göndererek proaktif şifre yönetimini destekler.
+
+---
+
+## 🌟 Özellikler
+
+- **🔑 Token Tabanlı Sıfırlama:** Kullanıcılara özel, tek kullanımlık ve zaman ayarlı (24 saat) güvenli bağlantılar gönderilir.
+- **📧 Otomatik Bildirimler:** Şifre süresi dolmak üzere olan (örn. son 7 gün) kullanıcılar otomatik tespit edilir ve uyarılır.
+- **🛡️ Güvenli Mimari:** Flask tabanlı backend, LDAP entegrasyonu ve izole Docker servisleri.
+- **🐳 Dockerize:** Kolay kurulum ve yönetim için tam Docker desteği.
+- **📱 Modern Arayüz:** Responsive tasarım ile tüm cihazlarda kusursuz deneyim.
+- **⚙️ Admin Paneli:** Manuel e-posta gönderimi ve sistem takibi için yönetim arayüzü.
+
+---
+
+## 🏗️ Sistem Mimarisi ve Topoloji
+
+Sistemin çalışma mantığı ve bileşenleri aşağıda detaylandırılmıştır.
+
+### 1. Genel Sistem Mimarisi
+Sistem; Web Arayüzü, Arka Plan Servisleri, Active Directory ve SMTP sunucusu arasındaki etkileşimi yönetir.
+
+```mermaid
+graph TB
+    %% Kullanıcı Katmanı
+    User["👤 Son Kullanıcı<br>Web Tarayıcı"]
+    Admin["👨‍💼 Sistem Yöneticisi<br>Admin Erişimi"]
+
+    %% Web Container
+    WebApp["🌐 Flask Web Uygulaması<br>app.py<br>Port: 80"]
+    AdminPanel["⚙️ Admin Panel<br>admin.py<br>Route: /admin"]
+
+    %% Servisler
+    TokenSvc["🔑 Token Service<br>token_service.py"]
+    ADSvc["📁 AD Service<br>ad_service.py"]
+    EmailSvc["📧 Email Service<br>email_service.py"]
+    LogSvc["📊 Log Service<br>log_service.py"]
+
+    %% Veritabanları
+    TokenDB[("🗄️ Token DB<br>SQLite")]
+
+    %% Job Container
+    ExpiryJob["⏰ Password Expiry Job<br>Otomatik Görev"]
+
+    %% Harici Sistemler
+    AD["🏢 Active Directory<br>LDAP"]
+    SMTP["📮 SMTP Server"]
+
+    %% Kullanıcı Bağlantıları
+    User -->|"HTTP:80"| WebApp
+    Admin -->|"HTTP:80/admin"| AdminPanel
+
+    %% Web App Bağlantıları
+    WebApp --> TokenSvc
+    WebApp --> ADSvc
+    WebApp --> LogSvc
+
+    %% Admin Panel Bağlantıları
+    AdminPanel --> ADSvc
+    AdminPanel --> EmailSvc
+    AdminPanel --> TokenSvc
+
+    %% Harici Bağlantılar
+    ADSvc -->|"LDAP Bind"| AD
+    EmailSvc -->|"SMTP"| SMTP
+
+    %% Job
+    ExpiryJob --> TokenSvc
+    ExpiryJob --> EmailSvc
+```
+
+### 2. Şifre Sıfırlama Akışı
+Kullanıcının e-posta bildirimi aldıktan sonraki şifre sıfırlama süreci.
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 Kullanıcı
+    participant Email as 📧 Email
+    participant Web as 🌐 Web App
+    participant Token as 🔑 Token Service
+    participant AD as 🏢 Active Directory
+
+    User->>Email: Token linkine tıklar
+    Email->>Web: GET /reset/token
+    Web->>Token: Token'ı doğrula
+    Token-->>Web: Geçerli
+    Web-->>User: Şifre sıfırlama formu
+    User->>Web: Yeni şifreyi gönder
+    Web->>AD: Şifreyi güncelle
+    AD-->>Web: Başarılı
+    Web->>Token: Token'ı geçersiz kıl
+    Web-->>User: Başarı mesajı
+```
+
+### 3. Otomatik Uyarı Sistemi (Cron Job)
+Sistemin belirli aralıklarla çalışarak şifresi dolacak kullanıcıları tespit etmesi.
+
+```mermaid
+sequenceDiagram
+    participant Cron as ⏰ Zamanlayıcı
+    participant Job as 🤖 Expiry Job
+    participant AD as 🏢 Active Directory
+    participant Token as 🔑 Token Service
+    participant Email as 📧 Email Service
+    participant Users as 👥 Kullanıcılar
+
+    Cron->>Job: Job'ı Başlat
+    Job->>AD: Kullanıcıları Sorgula (LDAP)
+    AD-->>Job: Süresi Gelecek Kullanıcılar
+    loop Her Kullanıcı İçin
+        Job->>Token: Token Oluştur
+        Token-->>Job: Token Linki
+        Job->>Email: Uyarı E-postası Hazırla
+        Email->>Users: Gönder
+    end
+```
+
+---
+
+## 🚀 Kurulum ve Başlangıç
+
+Bu proje Docker ve Docker Compose kullanılarak kolayca kurulabilir.
+
+### Ön Gereksinimler
+- Docker & Docker Compose
+- Active Directory / LDAP Sunucusu
+- SMTP Sunucusu (E-posta gönderimi için)
+
+### Adım 1: Kurulum
+Projeyi sunucunuza klonlayın ve dizine gidin:
+```bash
+git clone https://github.com/yourusername/passcore.git
+cd passcore
+```
+
+### Adım 2: Konfigürasyon (.env)
+Örnek `.env.example` dosyasını kopyalayın ve kendi ayarlarınızı yapın.
+**Not:** Bu dosya hassas bilgiler içerir, asla versiyon kontrolüne eklemeyin.
+
+`docker-compose.yml` içindeki ortam değişkenlerini de düzenleyebilirsiniz:
+
+| Değişken | Açıklama | Örnek |
+|----------|----------|-------|
+| `AD_SERVER` | AD Sunucu IP/Host | `192.168.1.50` |
+| `AD_DOMAIN` | Domain Adı | `example.local` |
+| `AD_USER` | Servis Hesabı Kullanıcısı | `EXAMPLE\svc_passcore` |
+| `AD_PASSWORD` | Servis Hesabı Şifresi | `GizliSifre` |
+| `SMTP_SERVER` | Mail Sunucusu | `192.168.1.25` |
+| `TEST_RECIPIENT` | Test Modu (tüm mailler bu adrese gider) | `admin@example.com` |
+
+### Adım 3: Çalıştırma
+Container'ları ayağa kaldırın:
+```bash
+docker-compose up -d
+```
+
+Web arayüzüne `http://localhost` veya sunucu IP adresinizden erişebilirsiniz.
+
+---
+
+## 🛠️ Kullanım ve Yönetim
+
+### Manuel Job Çalıştırma
+Otomatik kontrolü beklemeden e-posta gönderimini tetiklemek için:
+```bash
+docker-compose run --rm password-expiry-job
+```
+
+### Logları İzleme
+Sistem durumunu kontrol etmek için:
+```bash
+docker-compose logs -f
+```
+
+### Admin Paneli
+Yönetim paneline `/admin` yolundan erişilebilir (Erişim kısıtlamalarını yapılandırdığınızdan emin olun).
+
+---
+
+## 🔒 Güvenlik Notları
+- **HTTPS:** Prodüksiyon ortamında mutlaka SSL/TLS (Nginx Reverse Proxy vb.) kullanın.
+- **Gizlilik:** `.env` dosyanızı ve veritabanı dosyalarınızı (`data/*.db`) koruyun.
+- **Erişim:** Admin paneline erişimi IP bazlı kısıtlamanız önerilir.
+
+---
+
+## 🐛 Sorun Giderme
+Eğer "invalid credentials" hatası alıyorsanız:
+1. AD servis hesabı şifresinin doğru olduğundan emin olun.
+2. AD hesabının kilitli olmadığını kontrol edin.
+3. LDAP bağlantı portlarının (389/636) açık olduğunu doğrulayın.
+
+---
+
+**PassCore** - [Your Company](https://example.com)
+Versiyon 1.2

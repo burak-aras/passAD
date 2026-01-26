@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Giriş Yap - AD Şifre Değiştirme{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h3 class="card-title">Giriş Yap</h3>
+    <p class="text-muted">Active Directory hesabınızla giriş yapın</p>
+</div>
+
+<form method="POST" action="{{ url_for('login') }}" class="needs-validation" novalidate>
+    <div class="mb-3">
+        <label for="username" class="form-label">
+            <i class="bi bi-person-fill"></i> Kullanıcı Adı
+        </label>
+        <input type="text" class="form-control custom-input" id="username" name="username" placeholder="kullaniciadi"
+            required autofocus autocomplete="username">
+        <div class="form-text">Domain adı olmadan sadece kullanıcı adınızı girin</div>
+    </div>
+
+    <div class="mb-4">
+        <label for="password" class="form-label">
+            <i class="bi bi-lock-fill"></i> Şifre
+        </label>
+        <div class="input-group">
+            <input type="password" class="form-control custom-input" id="password" name="password"
+                placeholder="••••••••" required autocomplete="current-password">
+            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                <i class="bi bi-eye-fill" id="toggleIcon"></i>
+            </button>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary custom-btn w-100">
+        <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+    </button>
+</form>
+
+<div class="mt-4 text-center">
+    <small class="text-muted">
+        <i class="bi bi-info-circle"></i>
+        Şifrenizi değiştirmek için önce mevcut şifrenizle giriş yapmalısınız
+    </small>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('bi-eye-fill');
+            toggleIcon.classList.add('bi-eye-slash-fill');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('bi-eye-slash-fill');
+            toggleIcon.classList.add('bi-eye-fill');
+        }
+    });
+
+    // Form validation
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+{% endblock %}

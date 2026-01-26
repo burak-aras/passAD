@@ -1,0 +1,4 @@
+# Cron configuration
+# Run at 09:00 every Monday (1)
+0 9 * * 1 root cd /app && /usr/local/bin/python3 jobs/password_expiry_job.py >> /proc/1/fd/1 2>&1
+# Empty line is required at the end of this file

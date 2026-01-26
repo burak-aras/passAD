@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şifre Süresi Dolmak Üzere</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: black;
+            color: white;
+            padding: 30px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .test-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
+        .button {
+            display: inline-block;
+            background: black;
+            color: white !important;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .tip-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .tip-box p {
+            margin: 0;
+            font-size: 12px;
+        }
+
+        .tip-box code {
+            background: #fff;
+            padding: 5px;
+            display: inline-block;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+
+        .security-note {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .security-note p {
+            font-size: 12px;
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        ul li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        ul li:last-child {
+            border-bottom: none;
+        }
+
+        .days-left {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- TEST MODE WARNING (will be replaced by Python code) -->
+        {{TEST_WARNING}}
+
+        <!-- HEADER -->
+        <div class="header">
+            <h2>🔐 Şifre Süresi Dolmak Üzere</h2>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+            <p>Sayın <strong>{{DISPLAY_NAME}}</strong>,</p>
+
+            <p>Domain parolanızın kullanım süresi dolmak üzeredir.</p>
+
+            <!-- INFO BOX -->
+            <div class="info-box">
+                <ul>
+                    <li><strong>📅 Bitiş Tarihi:</strong> {{EXPIRY_DATE}}</li>
+                    <li><strong>⏰ Kalan Süre:</strong> <span class="days-left">{{DAYS_LEFT}} Gün</span></li>
+                </ul>
+            </div>
+
+            <!-- WARNING BOX -->
+            <div class="warning-box">
+                <strong>⚠️ Önemli:</strong> Parolanızın süresi dolarsa hesabınız kilitlenecek ve sisteme erişiminiz
+                engellenecektir.
+            </div>
+
+            <p>Lütfen <strong>en kısa sürede</strong> parolanızı güncelleyiniz. Aşağıdaki butona tıklayarak güvenli
+                şifre sıfırlama sayfasına yönlendirileceksiniz.</p>
+
+            <!-- RESET BUTTON -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{RESET_LINK}}" class="button">
+                    🔑 Parolamı Şimdi Değiştir
+                </a>
+            </div>
+
+            <!-- TIP BOX -->
+            <div class="tip-box">
+                <p>
+                    <strong>💡 İpucu:</strong> Butona tıklayamazsanız, aşağıdaki linki kopyalayıp tarayıcınıza
+                    yapıştırın:<br>
+                    <code>{{RESET_LINK}}</code>
+                </p>
+            </div>
+
+            <!-- SECURITY NOTE -->
+            <div class="security-note">
+                <p>
+                    <strong>🔒 Güvenlik Notu:</strong> Bu link sadece sizin için oluşturulmuştur ve <strong>24
+                        saat</strong> geçerlidir.
+                    Link sadece <strong>bir kez</strong> kullanılabilir.
+                </p>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Sistem Yönetimi</strong></p>
+            <p>Bu otomatik bir mesajdır, lütfen yanıtlamayın.</p>
+        </div>
+    </div>
+</body>
+
+</html>

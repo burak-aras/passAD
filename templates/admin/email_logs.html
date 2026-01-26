@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+{% block title %}Email Logları{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📧 Email Logları</h2>
+    <div class="d-flex gap-2">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}" class="btn btn-outline-secondary">← Önceki</a>
+        {% endif %}
+        <span class="btn btn-light disabled">Sayfa {{ page }}</span>
+        {% if logs|length == 50 %}
+        <a href="?page={{ page + 1 }}" class="btn btn-outline-secondary">Sonraki →</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Kullanıcı</th>
+                <th>Gerçek Email</th>
+                <th>Gönderildi</th>
+                <th>Kalan Gün</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.created_at }}</td>
+                <td>
+                    <strong>{{ log.display_name }}</strong>
+                    <br><small class="text-muted">{{ log.username }}</small>
+                </td>
+                <td>{{ log.real_email }}</td>
+                <td>
+                    {% if log.real_email != log.sent_to %}
+                    <span class="badge bg-warning text-dark">TEST</span>
+                    {% endif %}
+                    {{ log.sent_to }}
+                </td>
+                <td>{{ log.days_left }} gün</td>
+                <td>
+                    {% if log.status == 'sent' %}
+                    <span class="badge badge-sent">Gönderildi</span>
+                    {% else %}
+                    <span class="badge badge-failed">Başarısız</span>
+                    <br><small class="text-danger">{{ log.error_message }}</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    Henüz email logu yok
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+{% block title %}AD Kullanıcıları{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>👥 AD Kullanıcıları</h2>
+    <div>
+        <span class="badge bg-info">Şifre Politikası: {{ max_age }} gün</span>
+        <span class="badge bg-secondary">Toplam: {{ users|length }}</span>
+    </div>
+</div>
+
+<!-- Filter Info -->
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle"></i>
+    Kullanıcılar şifre bitiş süresine göre sıralanmıştır.
+    <strong>"Email Gönder"</strong> butonu ile manuel uyarı maili gönderebilirsiniz.
+    {% set test_mode = config.get('TEST_RECIPIENT', '') %}
+    {% if test_mode %}
+    <br><span class="badge bg-warning text-dark">TEST MODU: Tüm emailler {{ test_mode }} adresine gidecek</span>
+    {% endif %}
+</div>
+
+<div class="table-container">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Kullanıcı</th>
+                <th>Email</th>
+                <th>Departman</th>
+                <th>Son Değişiklik</th>
+                <th>Kalan Gün</th>
+                <th>İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr
+                class="{% if user.days_left is not none and user.days_left <= 7 %}table-danger{% elif user.days_left is not none and user.days_left <= 14 %}table-warning{% endif %}">
+                <td>
+                    <strong>{{ user.display_name }}</strong>
+                    <br><small class="text-muted">{{ user.username }}</small>
+                </td>
+                <td>
+                    {% if user.email %}
+                    {{ user.email }}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.department or '-' }}</td>
+                <td>
+                    {% if user.last_set %}
+                    {{ user.last_set.strftime('%d.%m.%Y') }}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.days_left is not none %}
+                    {% if user.days_left <= 0 %} <span class="badge bg-danger">Süresi Doldu!</span>
+                        {% elif user.days_left <= 7 %} <span class="badge bg-danger">{{ user.days_left }} gün</span>
+                            {% elif user.days_left <= 14 %} <span class="badge bg-warning text-dark">{{ user.days_left
+                                }} gün</span>
+                                {% else %}
+                                <span class="badge bg-success">{{ user.days_left }} gün</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                </td>
+                <td>
+                    {% if user.email %}
+                    <form action="{{ url_for('admin.send_manual_email') }}" method="POST" class="d-inline">
+                        <input type="hidden" name="username" value="{{ user.username }}">
+                        <input type="hidden" name="display_name" value="{{ user.display_name }}">
+                        <input type="hidden" name="email" value="{{ user.email }}">
+                        <input type="hidden" name="days_left" value="{{ user.days_left if user.days_left is not none else '' }}">
+                        <button type="submit" class="btn btn-sm btn-action"
+                            onclick="return confirm('{{ user.display_name }} kullanıcısına email göndermek istediğinize emin misiniz?')">
+                            <i class="bi bi-envelope"></i> Email Gönder
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">Email yok</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    Kullanıcı bulunamadı. AD bağlantısını kontrol edin.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # PassCore Web Application
+  passcore-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: passcore-web
+    ports:
+      - "80:80"
+    environment:
+      # Flask Settings
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=False
+      - TZ=Europe/Istanbul
+
+      # Active Directory Settings
+      - AD_SERVER=${AD_SERVER}
+      - AD_DOMAIN=${AD_DOMAIN}
+      - AD_BASE_DN=${AD_BASE_DN}
+      - AD_USE_SSL=False
+      - AD_USER=${AD_USER}
+      - AD_PASSWORD=${AD_PASSWORD}
+
+      # Application Settings
+      - APP_HOST=0.0.0.0
+      - APP_PORT=80
+
+      # Token Database
+      - TOKEN_DB_PATH=/app/data/tokens.db
+      - LOG_DB_PATH=/app/data/logs.db
+
+      # Admin Panel
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+
+      # Job Settings (for "Job Çalıştır" button)
+      - WARNING_START=${WARNING_START}
+      - WARNING_END=${WARNING_END}
+      - PASSCORE_URL=${PASSCORE_URL}
+      - TOKEN_VALIDITY_HOURS=${TOKEN_VALIDITY_HOURS}
+
+      # SMTP Settings
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - SENDER_EMAIL=${SENDER_EMAIL}
+
+      # Test Mode
+      - TEST_RECIPIENT=${TEST_RECIPIENT}
+    volumes:
+      - token-storage:/app/data
+    networks:
+      - passcore-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Email Notification Service (runs continuously with cron)
+  password-expiry-job:
+    build:
+      context: .
+      dockerfile: Dockerfile.job
+    container_name: password-expiry-job
+    environment:
+      - TZ=Europe/Istanbul
+      # Active Directory Settings (service account)
+      - AD_SERVER=${AD_SERVER}
+      - AD_DOMAIN=${AD_DOMAIN}
+      - AD_BASE_DN=${AD_BASE_DN}
+      - AD_USER=${AD_USER}
+      - AD_PASSWORD=${AD_PASSWORD}
+
+      # SMTP Settings
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - SENDER_EMAIL=${SENDER_EMAIL}
+
+      # Test Mode - all emails go to this address
+      - TEST_RECIPIENT=${TEST_RECIPIENT}
+
+      # Warning Period (days before expiry)
+      - WARNING_START=${WARNING_START}
+      - WARNING_END=${WARNING_END}
+
+      # PassCore URL (used in email links)
+      - PASSCORE_URL=${PASSCORE_URL}
+
+      # Token Settings
+      - TOKEN_DB_PATH=/app/data/tokens.db
+      - TOKEN_VALIDITY_HOURS=${TOKEN_VALIDITY_HOURS}
+
+      # Log directory
+      - LOG_DIR=/app/data
+    volumes:
+      - token-storage:/app/data
+    networks:
+      - passcore-network
+    # Job runs continuously with cron
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Shared volume for token database
+volumes:
+  token-storage:
+    driver: local
+
+# Network for inter-container communication
+networks:
+  passcore-network:
+    driver: bridge
