@@ -1,218 +1,117 @@
-# 🔐 PassAD: Active Directory Self-Service Password Reset
+# PassAD
 
-![PassCore Status](https://img.shields.io/badge/Status-Active-success)
-![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
-![Python](https://img.shields.io/badge/Python-3.10-yellow)
+Self-hosted Active Directory password management with single-use password-change links, password-expiry notifications, an administrator interface, and Docker deployment.
 
-PassAD, Active Directory kullanıcılarının kendi şifrelerini güvenli bir şekilde sıfırlamalarını sağlayan, Docker tabanlı modern bir web uygulamasıdır. Sistem ayrıca, şifre süresi dolmak üzere olan kullanıcılara otomatik e-posta bildirimleri göndererek proaktif şifre yönetimini destekler.
+PassAD is intended for IT administrators operating on-premises Active Directory. Users follow an emailed link and provide their current password to change it. Administrators can view directory users, send notifications, and review email, password-change, and activity records.
 
----
+## Current scope
 
-## 🌟 Özellikler
+This repository contains a Flask application configured for **one AD domain per deployment**, with SQLite storage and a separate cron container. It does not currently contain the later multi-domain/PostgreSQL implementation. Features in the [proposed roadmap](docs/ROADMAP.md) are not promises about the current release.
 
-- **🔑 Token Tabanlı Sıfırlama:** Kullanıcılara özel, tek kullanımlık ve zaman ayarlı (24 saat) güvenli bağlantılar gönderilir.
-- **📧 Otomatik Bildirimler:** Şifre süresi dolmak üzere olan (örn. son 7 gün) kullanıcılar otomatik tespit edilir ve uyarılır.
-- **🛡️ Güvenli Mimari:** Flask tabanlı backend, LDAP entegrasyonu ve izole Docker servisleri.
-- **🐳 Dockerize:** Kolay kurulum ve yönetim için tam Docker desteği.
-- **📱 Modern Arayüz:** Responsive tasarım ile tüm cihazlarda kusursuz deneyim.
-- **⚙️ Admin Paneli:** Manuel e-posta gönderimi ve sistem takibi için yönetim arayüzü.
+- Random, time-limited tokens; generating a new token invalidates the user's previous unused tokens.
+- Password changes using the user's current AD credentials.
+- Configurable password-expiry notification window and token lifetime.
+- An administrator dashboard, user list, email logs, password logs, and activity logs.
+- Administrator-initiated password resets for expired accounts using the configured service account.
+- A shared Docker volume for token and log databases.
 
----
+This is a self-hosted project, not a hosted password service. Review the configuration and current implementation before connecting it to a production directory.
 
-## 🏗️ Sistem Mimarisi ve Topoloji
-
-Sistemin çalışma mantığı ve bileşenleri aşağıda detaylandırılmıştır.
-
-### 1. Genel Sistem Mimarisi
-Sistem; Web Arayüzü, Arka Plan Servisleri, Active Directory ve SMTP sunucusu arasındaki etkileşimi yönetir.
+## Architecture
 
 ```mermaid
-graph TB
-    %% Kullanıcı Katmanı
-    User["👤 Son Kullanıcı<br>Web Tarayıcı"]
-    Admin["👨‍💼 Sistem Yöneticisi<br>Admin Erişimi"]
-
-    %% Web Container
-    WebApp["🌐 Flask Web Uygulaması<br>app.py<br>Port: 80"]
-    AdminPanel["⚙️ Admin Panel<br>admin.py<br>Route: /admin"]
-
-    %% Servisler
-    TokenSvc["🔑 Token Service<br>token_service.py"]
-    ADSvc["📁 AD Service<br>ad_service.py"]
-    EmailSvc["📧 Email Service<br>email_service.py"]
-    LogSvc["📊 Log Service<br>log_service.py"]
-
-    %% Veritabanları
-    TokenDB[("🗄️ Token DB<br>SQLite")]
-
-    %% Job Container
-    ExpiryJob["⏰ Password Expiry Job<br>Otomatik Görev"]
-
-    %% Harici Sistemler
-    AD["🏢 Active Directory<br>LDAP"]
-    SMTP["📮 SMTP Server"]
-
-    %% Kullanıcı Bağlantıları
-    User -->|"HTTP:80"| WebApp
-    Admin -->|"HTTP:80/admin"| AdminPanel
-
-    %% Web App Bağlantıları
-    WebApp --> TokenSvc
-    WebApp --> ADSvc
-    WebApp --> LogSvc
-
-    %% Admin Panel Bağlantıları
-    AdminPanel --> ADSvc
-    AdminPanel --> EmailSvc
-    AdminPanel --> TokenSvc
-
-    %% Harici Bağlantılar
-    ADSvc -->|"LDAP Bind"| AD
-    EmailSvc -->|"SMTP"| SMTP
-
-    %% Job
-    ExpiryJob --> TokenSvc
-    ExpiryJob --> EmailSvc
+flowchart LR
+    Browser[User or administrator] --> Web[Flask web application]
+    Web --> AD[Active Directory]
+    Web --> SMTP[SMTP relay]
+    Web --> Storage[(SQLite / shared volume)]
+    Cron[Expiry notification job] --> AD
+    Cron --> SMTP
+    Cron --> Storage
 ```
 
-### 2. Şifre Sıfırlama Akışı
-Kullanıcının e-posta bildirimi aldıktan sonraki şifre sıfırlama süreci.
+| Component | Implementation |
+|---|---|
+| Web | Python 3.10 Docker image, Flask, Jinja templates |
+| Directory integration | ldap3 |
+| Data | SQLite token and log databases |
+| Background job | A separate Docker container running cron |
+| Delivery | SMTP relay and HTML email templates |
 
-```mermaid
-sequenceDiagram
-    participant User as 👤 Kullanıcı
-    participant Email as 📧 Email
-    participant Web as 🌐 Web App
-    participant Token as 🔑 Token Service
-    participant AD as 🏢 Active Directory
+## Getting started
 
-    User->>Email: Token linkine tıklar
-    Email->>Web: GET /reset/token
-    Web->>Token: Token'ı doğrula
-    Token-->>Web: Geçerli
-    Web-->>User: Şifre sıfırlama formu
-    User->>Web: Yeni şifreyi gönder
-    Web->>AD: Şifreyi güncelle
-    AD-->>Web: Başarılı
-    Web->>Token: Token'ı geçersiz kıl
-    Web-->>User: Başarı mesajı
-```
+Prerequisites: Docker with a Compose command, an accessible AD test domain, an SMTP relay, and a service account with the directory permissions required for the actions you enable.
 
-### 3. Otomatik Uyarı Sistemi (Cron Job)
-Sistemin belirli aralıklarla çalışarak şifresi dolacak kullanıcıları tespit etmesi.
-
-```mermaid
-sequenceDiagram
-    participant Cron as ⏰ Zamanlayıcı
-    participant Job as 🤖 Expiry Job
-    participant AD as 🏢 Active Directory
-    participant Token as 🔑 Token Service
-    participant Email as 📧 Email Service
-    participant Users as 👥 Kullanıcılar
-
-    Cron->>Job: Job'ı Başlat
-    Job->>AD: Kullanıcıları Sorgula (LDAP)
-    AD-->>Job: Süresi Gelecek Kullanıcılar
-    loop Her Kullanıcı İçin
-        Job->>Token: Token Oluştur
-        Token-->>Job: Token Linki
-        Job->>Email: Uyarı E-postası Hazırla
-        Email->>Users: Gönder
-    end
-```
-
----
-
-## 🚀 Kurulum ve Başlangıç
-
-Bu proje Docker ve Docker Compose kullanılarak kolayca kurulabilir.
-
-### Ön Gereksinimler
-- Docker & Docker Compose
-- Active Directory / LDAP Sunucusu
-- SMTP Sunucusu (E-posta gönderimi için)
-
-### Adım 1: Kurulum
-Projeyi sunucunuza klonlayın ve dizine gidin:
 ```bash
 git clone https://github.com/burak-aras/passAD.git
-cd passad
-```
-
-### Adım 2: Konfigürasyon (.env)
-Örnek `.env.example` dosyasını `.env` olarak kopyalayın ve içeriğini kendi ortamınıza göre düzenleyin. 
-**Not:** Bu dosya hassas bilgiler (şifreler vb.) içerir, bu nedenle `.gitignore` dosyasına eklenmiştir ve versiyon kontrolüne (git) **eklenmemelidir**.
-
-```bash
+cd passAD
 cp .env.example .env
-nano .env
 ```
 
-Aşağıdaki tabloda `.env` dosyasındaki tüm ayarların ne işe yaradığı detaylıca açıklanmıştır:
+Edit `.env` before starting the containers. Use your own values; generate a random `SECRET_KEY` and set an administrator password. Start with a dedicated test account and an explicitly configured `TEST_RECIPIENT`.
 
-| Kategori | Değişken | Açıklama | Örnek |
-|----------|----------|----------|-------|
-| **Active Directory** | `AD_SERVER` | AD sunucusunun IP adresi veya hostname'i. | `192.168.1.50` |
-| | `AD_DOMAIN` | Domain adı (Domain Controller'daki domain). | `example.local` |
-| | `AD_BASE_DN` | LDAP sorguları için Base DN (Distinguished Name). | `DC=example,DC=local` |
-| | `AD_USER` | AD üzerinde okuma/yazma yetkisi olan servis hesabı (Domain\User formatında). | `EXAMPLE\svc_passad` |
-| | `AD_PASSWORD` | Servis hesabının şifresi. | `GizliSifre123!` |
-| **SMTP (E-posta)** | `SMTP_SERVER` | E-posta gönderimi için kullanılacak SMTP sunucusu. | `192.168.1.51` |
-| | `SMTP_PORT` | SMTP portu (Genellikle 25 veya 587). | `25` |
-| | `SENDER_EMAIL` | Gönderen olarak görünecek e-posta adresi. | `noreply@example.com` |
-| **Uygulama** | `PASSAD_URL` | Uygulamanın yayınlandığı URL (E-posta linklerinde kullanılır). | `http://passad.example.com` |
-| | `SECRET_KEY` | Flask oturum güvenliği için rastgele, uzun bir anahtar. | `rastgele-uzun-bir-guvenlik-anahtari` |
-| | `ADMIN_PASSWORD` | `/admin` paneline erişim için kullanılacak şifre. | `admin123` |
-| **Zamanlayıcı (Job)** | `WARNING_START` | Şifre süresinin dolmasına kaç gün kala uyarı gönderilmeye başlansın? | `14` (Son 14 gün kala başlar) |
-| | `WARNING_END` | Şifre süresinin dolmasına kaç gün kala uyarı gönderimi dursun? | `0` (Süre dolana kadar gönderir) |
-| | `TOKEN_VALIDITY_HOURS` | Şifre sıfırlama linkinin geçerlilik süresi (saat). | `24` |
-| **Test Modu** | `TEST_RECIPIENT` | **Sadece Test İçin:** Eğer tanımlıysa, sistem TÜM e-postaları gerçek kullanıcılar yerine bu adrese gönderir. Prodüksiyonda boş bırakın. | `admin@example.com` |
+| Variable | Purpose |
+|---|---|
+| `AD_SERVER` | Directory server hostname or address |
+| `AD_DOMAIN` | AD domain used for user authentication |
+| `AD_BASE_DN` | Search base, for example `DC=example,DC=local` |
+| `AD_USER`, `AD_PASSWORD` | Directory service account credentials |
+| `SECRET_KEY` | Flask session signing secret |
+| `ADMIN_PASSWORD` | Administrator panel password |
+| `SMTP_SERVER`, `SMTP_PORT` | Reachable SMTP relay |
+| `SENDER_EMAIL` | Notification sender |
+| `PASSAD_URL` | User-accessible application URL used in email links |
+| `WARNING_START`, `WARNING_END` | Inclusive minimum and maximum whole days until expiry |
+| `TOKEN_VALIDITY_HOURS` | Lifetime of a password-change link |
+| `TEST_RECIPIENT` | Optional override recipient for outgoing emails |
 
-> **İpucu:** Eğer Docker kullanıyorsanız ve ortam değişkenlerini `docker-compose.yml` içinden yönetmek isterseniz, `.env` dosyasındaki değerleri oraya da taşıyabilirsiniz, ancak `.env` dosyası kullanımı daha temiz ve güvenli bir yöntemdir.
+For notifications from zero through seven days before expiry, set `WARNING_START=0` and `WARNING_END=7`. The example environment currently uses a wider range; choose it deliberately.
 
-### Adım 3: Çalıştırma
-Container'ları ayağa kaldırın:
+The checked-in Compose file sets `AD_USE_SSL=False` for the web service. Setting only a value in `.env` does not override that literal. Review `docker-compose.yml` together with the directory connection code when configuring LDAP transport. Password modifications use LDAPS or StartTLS according to the service configuration.
+
+Build and start the application:
+
 ```bash
-docker-compose up -d
+docker compose up -d --build
+docker compose ps
 ```
 
-Web arayüzüne `http://localhost` veya sunucu IP adresinizden erişebilirsiniz.
+If your environment uses the standalone Compose executable, replace `docker compose` with `docker-compose`.
 
----
+The checked-in configuration exposes HTTP on host port 80. For a local test, open `http://localhost/admin/`. Users reach the password-change page through their emailed token link. Configure HTTPS and appropriate access controls before production use; the image currently starts Flask's built-in server.
 
-## 🛠️ Kullanım ve Yönetim
+## Notifications and administrator actions
 
-### Manuel Job Çalıştırma
-Otomatik kontrolü beklemeden e-posta gönderimini tetiklemek için:
+The schedule in [`jobs/crontab`](jobs/crontab) runs at **09:00 on Mondays**, with `TZ=Europe/Istanbul` configured for the job container. A narrow warning window may require a more frequent schedule. If you change the cron file, rebuild the job image.
+
 ```bash
-docker-compose run --rm password-expiry-job
+docker compose logs -f passad-web password-expiry-job
 ```
 
-### Logları İzleme
-Sistem durumunu kontrol etmek için:
+To execute the notification job manually, after checking the recipient and test directory configuration:
+
 ```bash
-docker-compose logs -f
+docker compose run --rm --entrypoint python3 password-expiry-job jobs/password_expiry_job.py
 ```
 
-### Admin Paneli
-Yönetim paneline `/admin` yolundan erişilebilir (Erişim kısıtlamalarını yapılandırdığınızdan emin olun).
+`TEST_RECIPIENT` changes the email recipient only. It is **not a dry-run mode** and does not disable AD password modifications. In the current administrator flow, sending an email for an expired account can first reset that account's password using the service account.
 
----
+The notification job skips accounts without a usable email address and excludes disabled accounts and accounts marked as having non-expiring passwords. Check AD attributes and logs when investigating a missing notification.
 
-## 🔒 Güvenlik Notları
-- **HTTPS:** Prodüksiyon ortamında mutlaka SSL/TLS (Nginx Reverse Proxy vb.) kullanın.
-- **Gizlilik:** `.env` dosyanızı ve veritabanı dosyalarınızı (`data/*.db`) koruyun.
-- **Erişim:** Admin paneline erişimi IP bazlı kısıtlamanız önerilir.
+## Data and operational boundaries
 
----
+- Preserve the `token-storage` Docker volume. `docker compose down -v` deletes the stored token and log databases.
+- Keep `.env`, database backups, reset links, directory exports, and credentials out of Git and public issue reports.
+- The current SMTP service uses a relay without an application-configured SMTP authentication or STARTTLS flow.
+- This revision has no checked-in automated test suite or CI workflow. Tests for a later implementation should not be presented as coverage for this revision.
+- HTTP health checks establish that the web endpoint responds; they are not an end-to-end AD/SMTP check.
 
-## 🐛 Sorun Giderme
-Eğer "invalid credentials" hatası alıyorsanız:
-1. AD servis hesabı şifresinin doğru olduğundan emin olun.
-2. AD hesabının kilitli olmadığını kontrol edin.
-3. LDAP bağlantı portlarının (389/636) açık olduğunu doğrulayın.
+## Contributing
 
----
+Bug reports, reproducible test cases, documentation improvements, and focused pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [the roadmap](docs/ROADMAP.md) for proposed work. English and Turkish contributions are welcome.
 
-**PassAD** - [Your Company](https://example.com)
-Versiyon 1.2
+For sensitive security reports, use GitHub private vulnerability reporting if it is enabled. Do not publish credentials, live reset tokens, or affected users' details in an issue. No separate private security contact or response-time commitment is documented at present.
+
+## License
+
+[MIT](LICENSE). Third-party dependencies retain their respective licenses.
